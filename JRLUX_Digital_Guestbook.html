@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JRLUX Homestays — Guest Book</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #C9A84C;
+    --gold-light: #E8D5A3;
+    --gold-pale: #FBF6EC;
+    --dark: #1A1A1A;
+    --charcoal: #2D2D2D;
+    --mid: #6B6B6B;
+    --light: #F5F2ED;
+    --white: #FFFFFF;
+    --border: #E2D9C8;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Jost', sans-serif; background: var(--light); color: var(--dark); }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(26,26,26,0.96); backdrop-filter: blur(8px);
+    padding: 0 2rem; height: 56px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .nav-brand { font-family: 'Cormorant Garamond', serif; color: var(--gold); font-size: 1.1rem; letter-spacing: 0.08em; font-weight: 400; }
+  .nav-links { display: flex; gap: 1.5rem; list-style: none; }
+  .nav-links a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 500; transition: color 0.2s; }
+  .nav-links a:hover { color: var(--gold); }
+
+  /* COVER */
+  .cover {
+    min-height: 100vh; background: var(--dark);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    position: relative; overflow: hidden; padding: 6rem 2rem 4rem;
+    text-align: center;
+  }
+  .cover-pattern {
+    position: absolute; inset: 0; opacity: 0.04;
+    background-image: repeating-linear-gradient(45deg, var(--gold) 0, var(--gold) 1px, transparent 0, transparent 50%);
+    background-size: 20px 20px;
+  }
+  .cover-ring {
+    position: absolute; border-radius: 50%; border: 1px solid rgba(201,168,76,0.12);
+  }
+  .cover::before {
+    content:''; position: absolute; top:50%; left:50%;
+    transform: translate(-50%,-50%);
+    width: 600px; height: 600px; border-radius: 50%;
+    border: 1px solid rgba(201,168,76,0.08);
+  }
+  .cover-eyebrow {
+    font-size: 0.68rem; letter-spacing: 0.25em; text-transform: uppercase;
+    color: var(--gold); font-weight: 500; margin-bottom: 1.5rem;
+  }
+  .cover-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2.8rem, 7vw, 5rem);
+    font-weight: 300; color: var(--white);
+    line-height: 1.1; letter-spacing: 0.02em;
+    margin-bottom: 0.5rem;
+  }
+  .cover-title em { color: var(--gold); font-style: italic; }
+  .cover-subtitle {
+    font-size: 0.75rem; letter-spacing: 0.18em; text-transform: uppercase;
+    color: rgba(255,255,255,0.45); margin-top: 1.5rem; font-weight: 400;
+  }
+  .cover-divider {
+    width: 60px; height: 1px; background: var(--gold); margin: 2rem auto;
+    opacity: 0.6;
+  }
+  .cover-meta {
+    display: flex; gap: 2.5rem; justify-content: center; flex-wrap: wrap;
+    margin-top: 2.5rem;
+  }
+  .cover-meta-item { text-align: center; }
+  .cover-meta-val { font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; color: var(--gold); font-weight: 300; display: block; }
+  .cover-meta-lbl { font-size: 0.62rem; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(255,255,255,0.4); margin-top: 2px; }
+  .cover-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(201,168,76,0.12); border: 1px solid rgba(201,168,76,0.3);
+    border-radius: 100px; padding: 6px 16px; margin-top: 2.5rem;
+    font-size: 0.68rem; color: var(--gold); letter-spacing: 0.12em; text-transform: uppercase;
+  }
+  .scroll-hint {
+    position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%);
+    color: rgba(255,255,255,0.3); font-size: 0.65rem; letter-spacing: 0.15em;
+    text-transform: uppercase; display: flex; flex-direction: column; align-items: center; gap: 8px;
+  }
+  .scroll-arrow { width: 1px; height: 40px; background: linear-gradient(to bottom, rgba(201,168,76,0.6), transparent); }
+
+  /* SECTIONS */
+  section { padding: 5rem 2rem; max-width: 800px; margin: 0 auto; }
+  .section-eyebrow {
+    font-size: 0.65rem; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--gold); font-weight: 500; margin-bottom: 0.75rem;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .section-eyebrow::after { content:''; flex: 1; height: 1px; background: var(--border); }
+  .section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+    font-weight: 300; line-height: 1.2; margin-bottom: 1.5rem; color: var(--dark);
+  }
+  .section-title em { color: var(--gold); font-style: italic; }
+  .section-body { font-size: 0.9rem; line-height: 1.85; color: var(--mid); }
+
+  /* WELCOME */
+  .welcome-bg { background: var(--white); }
+  .welcome-card {
+    background: var(--dark); border-radius: 2px;
+    padding: 3rem; margin-top: 2.5rem; position: relative; overflow: hidden;
+  }
+  .welcome-card::before {
+    content: '\201C'; font-family: 'Cormorant Garamond', serif;
+    font-size: 12rem; color: rgba(201,168,76,0.06); position: absolute;
+    top: -2rem; left: 1rem; line-height: 1; pointer-events: none;
+  }
+  .welcome-card p { color: rgba(255,255,255,0.75); font-size: 0.9rem; line-height: 1.9; position: relative; }
+  .welcome-card .signature {
+    margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1);
+    font-family: 'Cormorant Garamond', serif; color: var(--gold); font-size: 1.1rem; font-style: italic;
+  }
+
+  /* BADGE ROW */
+  .badge-row { display: flex; gap: 1rem; flex-wrap: wrap; margin: 2rem 0; }
+  .badge-item {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--gold-pale); border: 1px solid var(--gold-light);
+    border-radius: 2px; padding: 8px 14px;
+    font-size: 0.75rem; color: var(--dark); font-weight: 500;
+  }
+  .badge-item .icon { color: var(--gold); font-size: 1rem; }
+
+  /* ROOM CARDS */
+  .rooms-bg { background: var(--light); }
+  .room-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-top: 2rem; }
+  .room-card {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: 2px; padding: 1.5rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .room-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.06); }
+  .room-icon { font-size: 1.6rem; margin-bottom: 0.75rem; }
+  .room-name { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; color: var(--dark); margin-bottom: 0.4rem; }
+  .room-desc { font-size: 0.78rem; color: var(--mid); line-height: 1.7; }
+
+  /* RULES */
+  .rules-bg { background: var(--dark); color: var(--white); }
+  .rules-bg .section-title { color: var(--white); }
+  .rules-bg .section-body { color: rgba(255,255,255,0.65); }
+  .rules-bg .section-eyebrow::after { background: rgba(255,255,255,0.1); }
+  .rule-list { margin-top: 2rem; }
+  .rule-item {
+    display: flex; align-items: flex-start; gap: 1rem;
+    padding: 1rem 0; border-bottom: 1px solid rgba(255,255,255,0.07);
+  }
+  .rule-item:last-child { border-bottom: none; }
+  .rule-num {
+    min-width: 28px; height: 28px; border-radius: 50%;
+    background: rgba(201,168,76,0.15); border: 1px solid rgba(201,168,76,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.68rem; color: var(--gold); font-weight: 600; flex-shrink: 0;
+  }
+  .rule-text { font-size: 0.85rem; color: rgba(255,255,255,0.75); line-height: 1.6; }
+  .rule-text strong { color: var(--white); font-weight: 500; }
+
+  /* CHECKOUT */
+  .checkout-bg { background: var(--gold-pale); }
+  .checklist { margin-top: 2rem; }
+  .check-item {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 0.85rem 1.25rem; background: var(--white);
+    border: 1px solid var(--border); margin-bottom: 0.5rem; border-radius: 2px;
+  }
+  .check-box {
+    width: 20px; height: 20px; border: 1.5px solid var(--gold);
+    border-radius: 2px; flex-shrink: 0; margin-top: 1px;
+  }
+  .check-label { font-size: 0.85rem; color: var(--dark); line-height: 1.5; }
+  .check-label strong { font-weight: 500; }
+  .checkout-note {
+    margin-top: 1.5rem; padding: 1rem 1.25rem;
+    background: var(--dark); border-radius: 2px;
+    font-size: 0.8rem; color: rgba(255,255,255,0.75); line-height: 1.6;
+  }
+  .checkout-note strong { color: var(--gold); }
+
+  /* FACILITIES */
+  .facilities-bg { background: var(--white); }
+  .facility-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 2rem; }
+  .facility-card {
+    border: 1px solid var(--border); border-radius: 2px; padding: 1.5rem;
+    position: relative; overflow: hidden;
+  }
+  .facility-card::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+    height: 2px; background: var(--gold); transform: scaleX(0);
+    transform-origin: left; transition: transform 0.3s;
+  }
+  .facility-card:hover::after { transform: scaleX(1); }
+  .facility-floor { font-size: 0.62rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.5rem; font-weight: 500; }
+  .facility-name { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; color: var(--dark); margin-bottom: 0.4rem; }
+  .facility-info { font-size: 0.78rem; color: var(--mid); line-height: 1.6; }
+
+  /* TRANSPORT */
+  .transport-bg { background: var(--light); }
+  .transport-grid { margin-top: 2rem; display: flex; flex-direction: column; gap: 0.75rem; }
+  .transport-item {
+    display: flex; align-items: flex-start; gap: 1rem;
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: 2px; padding: 1rem 1.25rem;
+  }
+  .transport-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: 1px; }
+  .transport-name { font-size: 0.85rem; font-weight: 500; color: var(--dark); }
+  .transport-detail { font-size: 0.78rem; color: var(--mid); margin-top: 2px; line-height: 1.5; }
+  .transport-time {
+    margin-left: auto; font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem; color: var(--gold); white-space: nowrap; flex-shrink: 0;
+  }
+
+  /* LOCAL GUIDE */
+  .local-bg { background: var(--dark); }
+  .local-bg .section-title { color: var(--white); }
+  .local-bg .section-eyebrow::after { background: rgba(255,255,255,0.1); }
+  .local-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 2rem; }
+  .local-card {
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 2px; padding: 1.25rem;
+  }
+  .local-category { font-size: 0.62rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.75rem; font-weight: 500; }
+  .local-item { font-size: 0.8rem; color: rgba(255,255,255,0.65); padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.05); line-height: 1.4; }
+  .local-item:last-child { border-bottom: none; }
+  .local-item span { color: rgba(255,255,255,0.35); font-size: 0.72rem; margin-left: 4px; }
+
+  /* EMERGENCY */
+  .emergency-bg { background: var(--white); }
+  .emergency-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-top: 2rem; }
+  .emergency-card {
+    border: 1px solid var(--border); border-radius: 2px; padding: 1.25rem;
+  }
+  .emergency-card.host { border-color: var(--gold); background: var(--gold-pale); }
+  .e-label { font-size: 0.62rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--mid); margin-bottom: 0.4rem; font-weight: 500; }
+  .e-name { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; color: var(--dark); margin-bottom: 0.25rem; }
+  .e-contact { font-size: 0.82rem; color: var(--mid); }
+  .e-contact strong { color: var(--dark); font-weight: 500; }
+  .emergency-card.host .e-label { color: var(--gold); }
+
+  /* VISIT MALAYSIA */
+  .vm-bg {
+    background: linear-gradient(135deg, #1A1A1A 0%, #0D2137 100%);
+    text-align: center;
+  }
+  .vm-bg .section-title { color: var(--white); }
+  .vm-bg .section-body { color: rgba(255,255,255,0.6); }
+  .vm-bg .section-eyebrow { justify-content: center; }
+  .vm-bg .section-eyebrow::after { display: none; }
+  .vm-banner {
+    display: inline-block; margin: 1.5rem auto 0;
+    background: rgba(201,168,76,0.12); border: 1px solid rgba(201,168,76,0.3);
+    border-radius: 2px; padding: 1rem 2rem;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.4rem; color: var(--gold); font-style: italic;
+  }
+  .vm-tips { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-top: 2rem; text-align: left; }
+  .vm-tip {
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 2px; padding: 1.25rem;
+  }
+  .vm-tip-icon { font-size: 1.4rem; margin-bottom: 0.5rem; }
+  .vm-tip-title { font-size: 0.8rem; font-weight: 500; color: var(--white); margin-bottom: 0.25rem; }
+  .vm-tip-body { font-size: 0.75rem; color: rgba(255,255,255,0.5); line-height: 1.6; }
+
+  /* FOOTER */
+  footer {
+    background: var(--dark); padding: 3rem 2rem;
+    text-align: center; border-top: 1px solid rgba(255,255,255,0.06);
+  }
+  .footer-logo { font-family: 'Cormorant Garamond', serif; color: var(--gold); font-size: 1.3rem; letter-spacing: 0.1em; margin-bottom: 0.5rem; }
+  .footer-sub { font-size: 0.7rem; color: rgba(255,255,255,0.3); letter-spacing: 0.1em; text-transform: uppercase; }
+  .footer-line { width: 40px; height: 1px; background: var(--gold); margin: 1.25rem auto; opacity: 0.4; }
+  .footer-note { font-size: 0.75rem; color: rgba(255,255,255,0.3); max-width: 400px; margin: 0 auto; line-height: 1.7; }
+
+  /* ANIMATE */
+  .fade-in { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
+  .fade-in.visible { opacity: 1; transform: none; }
+
+  @media (max-width: 600px) {
+    .nav-links { display: none; }
+    section { padding: 3.5rem 1.25rem; }
+    .welcome-card { padding: 2rem; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">
+    <svg width="100" height="28" viewBox="0 0 260 80" xmlns="http://www.w3.org/2000/svg" style="display:block;">
+      <circle cx="40" cy="40" r="34" fill="none" stroke="#C9A84C" stroke-width="2"/>
+      <circle cx="40" cy="40" r="27" fill="none" stroke="#C9A84C" stroke-width="0.5" opacity="0.4"/>
+      <text x="40" y="48" font-family="Georgia,serif" font-size="24" font-weight="700" fill="#C9A84C" text-anchor="middle" letter-spacing="1.5">JR</text>
+      <line x1="84" y1="16" x2="84" y2="64" stroke="#C9A84C" stroke-width="0.6" opacity="0.35"/>
+      <text x="98" y="44" font-family="Georgia,serif" font-size="30" font-weight="400" fill="#FFFFFF" letter-spacing="7">LUX</text>
+      <text x="99" y="60" font-family="Georgia,serif" font-size="8" fill="#C9A84C" letter-spacing="3.5">HOMESTAYS</text>
+    </svg>
+  </div>
+  <ul class="nav-links">
+    <li><a href="#welcome">Welcome</a></li>
+    <li><a href="#space">The Space</a></li>
+    <li><a href="#rules">House Rules</a></li>
+    <li><a href="#checkout">Checkout</a></li>
+    <li><a href="#facilities">Facilities</a></li>
+    <li><a href="#getting-here">Getting Here</a></li>
+    <li><a href="#local">Local Guide</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- COVER -->
+<div class="cover">
+  <div class="cover-pattern"></div>
+  <div class="cover-eyebrow">Welcome to</div>
+  <svg width="300" height="92" viewBox="0 0 260 80" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:0 auto;">
+    <circle cx="40" cy="40" r="34" fill="none" stroke="#C9A84C" stroke-width="1.8"/>
+    <circle cx="40" cy="40" r="27" fill="none" stroke="#C9A84C" stroke-width="0.5" opacity="0.4"/>
+    <text x="40" y="48" font-family="Georgia,serif" font-size="24" font-weight="700" fill="#C9A84C" text-anchor="middle" letter-spacing="1.5">JR</text>
+    <line x1="84" y1="16" x2="84" y2="64" stroke="#C9A84C" stroke-width="0.6" opacity="0.35"/>
+    <text x="98" y="44" font-family="Georgia,serif" font-size="30" font-weight="400" fill="#FFFFFF" letter-spacing="7">LUX</text>
+    <text x="99" y="60" font-family="Georgia,serif" font-size="8" fill="#C9A84C" letter-spacing="3.5">HOMESTAYS</text>
+  </svg>
+  <p class="cover-subtitle">Platinum Suites KLCC &nbsp;·&nbsp; Kuala Lumpur, Malaysia</p>
+  <div class="cover-divider"></div>
+  <div class="cover-meta">
+    <div class="cover-meta-item">
+      <span class="cover-meta-val">1,050</span>
+      <span class="cover-meta-lbl">Sq Ft</span>
+    </div>
+    <div class="cover-meta-item">
+      <span class="cover-meta-val">2BR</span>
+      <span class="cover-meta-lbl">Bedrooms</span>
+    </div>
+    <div class="cover-meta-item">
+      <span class="cover-meta-val">2BA</span>
+      <span class="cover-meta-lbl">Bathrooms</span>
+    </div>
+    <div class="cover-meta-item">
+      <span class="cover-meta-val">★ 5.0</span>
+      <span class="cover-meta-lbl">Consistently Rated</span>
+    </div>
+  </div>
+  <div class="cover-badge">
+    ✦ &nbsp; Top 5% of Homes in Kuala Lumpur &nbsp; ✦
+  </div>
+  <div class="scroll-hint">
+    <div class="scroll-arrow"></div>
+    <span>Scroll to explore</span>
+  </div>
+</div>
+
+<!-- WELCOME -->
+<div id="welcome" class="welcome-bg">
+<section class="fade-in">
+  <div class="section-eyebrow">A message from your host</div>
+  <h2 class="section-title">Welcome to your<br><em>home away from home</em></h2>
+  <p class="section-body">We are delighted to have you at JRLUX Homestays. This corner suite was designed with one thing in mind — giving you the space, privacy, and comfort to feel genuinely at home in the heart of Kuala Lumpur.</p>
+  <div class="welcome-card">
+    <p>Where Comfort Meets Contribution — our community-oriented and self-service homestay model is designed to enhance your stay while promoting responsibility and sustainability. We believe the best guest experiences are built on trust, transparency, and mutual respect.</p>
+    <p style="margin-top:1rem;">We proudly offer a full <strong style="color:var(--gold);">24-hour stay</strong> — check in at 1:00 PM, check out at 1:00 PM — in proud support of <strong style="color:var(--gold);">Visit Malaysia Year 2026</strong>. You deserve every hour you pay for.</p>
+    <p style="margin-top:1rem;">If you need anything at all, we are just a message away. Enjoy your stay.</p>
+    <div class="signature">— Lee, Your Host &nbsp;·&nbsp; Superhost since 2023</div>
+  </div>
+  <div class="badge-row" style="margin-top:2rem;">
+    <div class="badge-item"><span class="icon">⭐</span> Guest Favourite</div>
+    <div class="badge-item"><span class="icon">🏆</span> Top 5% of Region</div>
+    <div class="badge-item"><span class="icon">🕐</span> 24-Hour Stay Policy</div>
+    <div class="badge-item"><span class="icon">🌿</span> Self-Service · Eco Friendly</div>
+    <div class="badge-item"><span class="icon">🇲🇾</span> Visit Malaysia 2026</div>
+  </div>
+</section>
+</div>
+
+<!-- THE SPACE -->
+<div id="space" class="rooms-bg">
+<section class="fade-in">
+  <div class="section-eyebrow">Your apartment</div>
+  <h2 class="section-title">The <em>Space</em></h2>
+  <p class="section-body">A fully furnished 1,050 sqft corner unit — designed for comfort, privacy, and a breathtaking city view. Everything you need is already here. Just arrive and settle in.</p>
+  <div class="room-grid">
+    <div class="room-card">
+      <div class="room-icon">🛏️</div>
+      <div class="room-name">Master Bedroom</div>
+      <div class="room-desc">Comfortable king bed with premium bedding, air conditioning, wardrobe, and ample storage.</div>
+    </div>
+    <div class="room-card">
+      <div class="room-icon">🛏️</div>
+      <div class="room-name">Second Bedroom</div>
+      <div class="room-desc">Cozy second bedroom with quality bedding, air conditioning, and dedicated wardrobe space.</div>
+    </div>
+    <div class="room-card">
+      <div class="room-icon">🛁</div>
+      <div class="room-name">Two Bathrooms</div>
+      <div class="room-desc">Two modern private bathrooms with fresh towels, toiletries, hairdryer, and hot water.</div>
+    </div>
+    <div class="room-card">
+      <div class="room-icon">🛋️</div>
+      <div class="room-name">Living Hall</div>
+      <div class="room-desc">Spacious corner living area with city views, air conditioning, smart TV with Netflix.</div>
+    </div>
+    <div class="room-card">
+      <div class="room-icon">🍳</div>
+      <div class="room-name">Full Kitchen</div>
+      <div class="room-desc">Fully equipped kitchen with cooking wares, utensils, and all modern appliances.</div>
+    </div>
+    <div class="room-card">
+      <div class="room-icon">👕</div>
+      <div class="room-name">Laundry</div>
+      <div class="room-desc">In-unit washer and dryer, drying rack, and laundry detergent — all fully stocked.</div>
+    </div>
+  </div>
+  <div style="margin-top:2rem; padding:1.25rem; background:var(--white); border:1px solid var(--border); border-left:3px solid var(--gold);">
+    <p style="font-size:0.82rem; color:var(--mid); line-height:1.7;"><strong style="color:var(--dark);">Travel Light.</strong> Our apartment is fully stocked with all necessities — laundry detergent, cleaning supplies, kitchen essentials, toiletries, and more. Just pack your luggage and enjoy your trip. Everything you need is already here.</p>
+  </div>
+</section>
+</div>
+
+<!-- HOUSE RULES -->
+<div id="rules" class="rules-bg">
+<section class="fade-in">
+  <div class="section-eyebrow" style="color:var(--gold);">Please read carefully</div>
+  <h2 class="section-title">House <em>Rules</em></h2>
+  <p class="section-body">Our rules are designed to protect your comfort and ensure the next guests enjoy the same quality experience. We appreciate your cooperation.</p>
+  <div class="rule-list">
+    <div class="rule-item">
+      <div class="rule-num">1</div>
+      <div class="rule-text"><strong>Self-Service Homestay</strong> — This is a self-catering serviced apartment. Daily housekeeping is not provided. All cleaning supplies, laundry detergent, vacuum cleaner, mop, and kitchen cleaning products are fully stocked for your use throughout your stay.</div>
+    </div>
+    <div class="rule-item">
+      <div class="rule-num">2</div>
+      <div class="rule-text"><strong>Maximum Guests</strong> — Maximum 4 guests per booking. Unregistered visitors are not permitted to stay overnight. Guests not declared during booking are not allowed.</div>
+    </div>
+    <div class="rule-item">
+      <div class="rule-num">3</div>
+      <div class="rule-text"><strong>No Smoking</strong> — Strictly no smoking inside the unit or on the balcony. This includes e-cigarettes and vaping. Violation will result in forfeiture of your security deposit.</div>
+    </div>
+    <div class="rule-item">
+      <div class="rule-num">4</div>
+      <div class="rule-text"><strong>No Parties or Events</strong> — This is a residential building. No parties, loud music, or gatherings beyond registered guests. Quiet hours are 10:00 PM – 8:00 AM daily.</div>
+    </div>
+    <div class="rule-item">
+      <div class="rule-num">5</div>
+      <div class="rule-text"><strong>No Pets</strong> — Pets of any kind are not permitted inside the unit or building premises.</div>
+    </div>
+    <div class="rule-item">
+      <div class="rule-num">6</div>
+      <div class="rule-text"><strong>Respect the Property</strong> — Please treat the unit and all furnishings with care. Any damage beyond normal wear will be charged accordingly. Report any issues to the host immediately.</div>
+    </div>
+    <div class="rule-item">
+      <div class="rule-num">7</div>
+      <div class="rule-text"><strong>Access Cards & Keys</strong> — Please keep all access cards and keys safe. Lost cards will be charged at replacement cost. Return all cards upon checkout.</div>
+    </div>
+    <div class="rule-item">
+      <div class="rule-num">8</div>
+      <div class="rule-text"><strong>Check-In / Check-Out</strong> — Check-in: <strong style="color:var(--gold);">1:00 PM</strong>. Check-out: <strong style="color:var(--gold);">1:00 PM</strong>. Full 24-hour stay guaranteed. Early check-in and late checkout subject to availability — please enquire with the host in advance.</div>
+    </div>
+    <div class="rule-item">
+      <div class="rule-num">9</div>
+      <div class="rule-text"><strong>Cleaning Fee & Policy</strong> — A one-time cleaning fee of <strong style="color:var(--gold);">RM100</strong> applies per booking (included in your booking). Guests who do not complete checkout tasks may be subject to an additional charge of RM150.</div>
+    </div>
+    <div class="rule-item">
+      <div class="rule-num">10</div>
+      <div class="rule-text"><strong>Electricity & Utilities</strong> — Please switch off all air conditioning, lights, and appliances when leaving the unit. As a commercial-titled property, electricity costs are higher — your mindful use is appreciated.</div>
+    </div>
+  </div>
+</section>
+</div>
+
+<!-- CHECKOUT CHECKLIST -->
+<div id="checkout" class="checkout-bg">
+<section class="fade-in">
+  <div class="section-eyebrow">Before you leave</div>
+  <h2 class="section-title">Checkout <em>Checklist</em></h2>
+  <p class="section-body">Checkout is at <strong>1:00 PM</strong>. Please complete the following steps before departing. All supplies are provided — no need to purchase anything.</p>
+  <div class="checklist">
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div class="check-label"><strong>Launder all used towels and bath mats</strong> — place in washing machine, add laundry detergent (provided), run a full wash cycle.</div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div class="check-label"><strong>Hang washed towels on the drying rack</strong> — spread them out to air dry before you leave.</div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div class="check-label"><strong>Wash all used dishes, pots, and utensils</strong> — use dish soap provided. Leave on drying rack.</div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div class="check-label"><strong>Dispose of all rubbish</strong> — place all waste in the rubbish bags provided, then bring them to the <strong>refuse room</strong> on your floor and dispose in the waste bin there. Do not leave rubbish inside the apartment.</div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div class="check-label"><strong>Return all access cards and keys</strong> — place them in the designated tray near the entrance. Contact host for return instructions.</div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div class="check-label"><strong>Switch off all air conditioning units</strong> — check all bedrooms and the living hall.</div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div class="check-label"><strong>Switch off all lights</strong> — including bathrooms, kitchen, and any night lights.</div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div class="check-label"><strong>Lock the front door</strong> — ensure the door is fully locked when you leave.</div>
+    </div>
+    <div class="check-item">
+      <div class="check-box"></div>
+      <div class="check-label"><strong>Send your host a checkout message</strong> — a quick message letting us know you've departed is greatly appreciated.</div>
+    </div>
+  </div>
+  <div class="checkout-note">
+    <strong>Thank you</strong> for completing these simple steps. Your participation keeps our homestay running smoothly and helps us maintain our consistently 5-star standard. Safe travels — and we hope to welcome you back soon.
+  </div>
+</section>
+</div>
+
+<!-- FACILITIES -->
+<div id="facilities" class="facilities-bg">
+<section class="fade-in">
+  <div class="section-eyebrow">Building amenities</div>
+  <h2 class="section-title">Building <em>Facilities</em></h2>
+  <p class="section-body">As a resident of Platinum Suites, you have full access to world-class building facilities. Your elevator access card is required — please keep it with you.</p>
+  <div class="facility-grid">
+    <div class="facility-card">
+      <div class="facility-floor">Level 51 · Open Daily</div>
+      <div class="facility-name">Infinity Pool &amp; Wading Pool</div>
+      <div class="facility-info">Open daily 10:00 AM – 10:00 PM. Rooftop infinity pool with panoramic KL skyline views. Access via elevator with your card.</div>
+    </div>
+    <div class="facility-card">
+      <div class="facility-floor">Level 51 · Open Daily</div>
+      <div class="facility-name">Fitness Centre</div>
+      <div class="facility-info">Fully equipped gym with cardio and strength equipment. Open daily. Access via elevator with your access card.</div>
+    </div>
+    <div class="facility-card">
+      <div class="facility-floor">Level 51 · Evening</div>
+      <div class="facility-name">Skydeck Restaurant</div>
+      <div class="facility-info">Open daily 6:00 PM – 12:00 AM. Dining with panoramic city views. Located on the same floor as the pool and gym.</div>
+    </div>
+    <div class="facility-card">
+      <div class="facility-floor">B1 – B5 · 24 Hours</div>
+      <div class="facility-name">Car Park</div>
+      <div class="facility-info">One complimentary parking bay included. Additional vehicles via Touch 'n Go on levels B1–B5. Parking access card provided.</div>
+    </div>
+    <div class="facility-card">
+      <div class="facility-floor">Ground Floor · 24 Hours</div>
+      <div class="facility-name">Lobby &amp; Concierge</div>
+      <div class="facility-info">Comfortable lobby accessible at all times. Concierge desk available during office hours for any assistance.</div>
+    </div>
+    <div class="facility-card">
+      <div class="facility-floor">All Floors · 24 Hours</div>
+      <div class="facility-name">Elevators (8 Total)</div>
+      <div class="facility-info">4 elevators serve floors 9–29. 4 elevators serve floors 30–49. All 8 access public areas including Skydeck, gym, pool, and carpark.</div>
+    </div>
+  </div>
+</section>
+</div>
+
+<!-- TRANSPORT -->
+<div id="transport" class="transport-bg">
+<section class="fade-in">
+  <div class="section-eyebrow">Getting around</div>
+  <h2 class="section-title">Transport &amp; <em>Getting Around</em></h2>
+  <p class="section-body">Platinum Suites sits in the heart of KL's Golden Triangle — everything is within easy reach by rail, Grab, or on foot.</p>
+  <div class="transport-grid">
+    <div class="transport-item">
+      <div class="transport-icon">🚇</div>
+      <div>
+        <div class="transport-name">Bukit Nanas Monorail Station</div>
+        <div class="transport-detail">Direct monorail connection to Bukit Bintang, KL Sentral, and interchange stations. Walk via Jalan Sultan Ismail.</div>
+      </div>
+      <div class="transport-time">5 min walk</div>
+    </div>
+    <div class="transport-item">
+      <div class="transport-icon">🚇</div>
+      <div>
+        <div class="transport-name">Dang Wangi LRT Station</div>
+        <div class="transport-detail">LRT Kelana Jaya Line — direct access to KLCC, Masjid Jamek, Bangsar, and Subang Jaya.</div>
+      </div>
+      <div class="transport-time">8 min walk</div>
+    </div>
+    <div class="transport-item">
+      <div class="transport-icon">🛍️</div>
+      <div>
+        <div class="transport-name">Pavilion KL</div>
+        <div class="transport-detail">World-class shopping mall with 500+ brands, dining, and entertainment. Easy walk via Bukit Bintang.</div>
+      </div>
+      <div class="transport-time">8 min walk</div>
+    </div>
+    <div class="transport-item">
+      <div class="transport-icon">🏙️</div>
+      <div>
+        <div class="transport-name">KLCC Twin Towers &amp; Suria KLCC</div>
+        <div class="transport-detail">Petronas Twin Towers, KLCC Park, Suria KLCC Mall, and Aquaria. Best reached via Grab or LRT from Dang Wangi.</div>
+      </div>
+      <div class="transport-time">12 min drive</div>
+    </div>
+    <div class="transport-item">
+      <div class="transport-icon">✈️</div>
+      <div>
+        <div class="transport-name">KLIA / KLIA2</div>
+        <div class="transport-detail">KLIA Ekspres from KL Sentral — fastest airport connection. Grab/taxi also available from building lobby 24 hours.</div>
+      </div>
+      <div class="transport-time">~45 min</div>
+    </div>
+    <div class="transport-item">
+      <div class="transport-icon">🚗</div>
+      <div>
+        <div class="transport-name">Grab (Ride-Hailing)</div>
+        <div class="transport-detail">Available 24 hours directly from the building lobby. Recommended for late-night and airport transfers.</div>
+      </div>
+      <div class="transport-time">Available 24hr</div>
+    </div>
+  </div>
+</section>
+</div>
+
+<!-- GETTING HERE -->
+<div id="getting-here" style="background: var(--white);">
+<section class="fade-in">
+  <div class="section-eyebrow">Finding us</div>
+  <h2 class="section-title">Getting <em>Here</em></h2>
+  <p class="section-body">Our full address is <strong>No. 1020, Jalan Sultan Ismail, 50250 Kuala Lumpur</strong>. Save it in Grab or Waze before you travel. The building is also known as <strong>The Face Suites</strong> — use either name when searching.</p>
+
+  <div class="transport-grid" style="margin-top:1.5rem;">
+
+    <div class="transport-item" style="background:var(--gold-pale); border:1px solid var(--gold-light); border-radius:4px; padding:1rem;">
+      <div class="transport-icon">🚗</div>
+      <div style="flex:1;">
+        <div class="transport-name" style="color:#27500A;">Grab — Recommended</div>
+        <div class="transport-detail">Open Grab app → search <strong>"Platinum Suites KLCC"</strong> or <strong>"The Face Suites"</strong>. Drop-off directly at the lobby entrance on Jalan Sultan Ismail. Available 24 hours.</div>
+      </div>
+    </div>
+
+    <div class="transport-item">
+      <div class="transport-icon">🚝</div>
+      <div style="flex:1;">
+        <div class="transport-name">KL Monorail — Bukit Nanas Station</div>
+        <div class="transport-detail">Alight at <strong>Bukit Nanas station</strong>. Exit and walk along Jalan Sultan Ismail heading north — Platinum Suites is on your left after approximately 5 minutes. Look for The Face Suites signage.</div>
+      </div>
+      <div class="transport-time">5 min walk</div>
+    </div>
+
+    <div class="transport-item">
+      <div class="transport-icon">🚇</div>
+      <div style="flex:1;">
+        <div class="transport-name">LRT — Dang Wangi Station</div>
+        <div class="transport-detail">Kelana Jaya Line — alight at <strong>Dang Wangi station</strong>. Exit via Jalan Sultan Ismail and walk south approximately 8 minutes. Building is on your right.</div>
+      </div>
+      <div class="transport-time">8 min walk</div>
+    </div>
+
+    <div class="transport-item">
+      <div class="transport-icon">🅿️</div>
+      <div style="flex:1;">
+        <div class="transport-name">Self-Drive / Waze</div>
+        <div class="transport-detail">GPS / Waze: search <strong>"Platinum Suites KLCC"</strong> or <strong>"No. 1020 Jalan Sultan Ismail"</strong>. Enter car park from Jalan Sultan Ismail. Car park levels B1–B5. Use the parking access card provided in your welcome pack.</div>
+      </div>
+    </div>
+
+    <div class="transport-item">
+      <div class="transport-icon">✈️</div>
+      <div style="flex:1;">
+        <div class="transport-name">From KLIA / KLIA2</div>
+        <div class="transport-detail"><strong>By train:</strong> Take KLIA Ekspres to KL Sentral → transfer to KL Monorail → alight Bukit Nanas → 5 min walk.<br><strong>By Grab:</strong> Direct from airport, approximately 45–60 min depending on traffic. Estimated fare RM60–80.</div>
+      </div>
+      <div class="transport-time">~45–60 min</div>
+    </div>
+
+    <div class="transport-item">
+      <div class="transport-icon">📍</div>
+      <div style="flex:1;">
+        <div class="transport-name">Building Entrance & Lobby</div>
+        <div class="transport-detail">Main entrance is on <strong>Jalan Sultan Ismail</strong>. Proceed to lobby reception to collect your access card. Lifts are located past the lobby — 4 lifts serve floors 9–29, 4 lifts serve floors 30–49 including Skydeck on Level 51.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div style="margin-top:1.5rem; padding:1rem 1.25rem; background:var(--gold-pale); border:1px solid var(--gold-light); border-left:3px solid var(--gold); border-radius:2px; font-size:13px; color:#27500A; line-height:1.7;">
+    <strong>Having trouble finding us?</strong> WhatsApp your host at any time — we will guide you in. Please do not hesitate to reach out, especially if arriving late at night or for the first time.
+  </div>
+</section>
+</div>
+
+
+<!-- LOCAL GUIDE -->
+<div id="local" class="local-bg">
+<section class="fade-in">
+  <div class="section-eyebrow" style="color:var(--gold);">Host recommendations</div>
+  <h2 class="section-title">Local <em>Guide</em></h2>
+  <p style="font-size:0.9rem; color:rgba(255,255,255,0.55); line-height:1.8; margin-bottom:0;">Our curated recommendations for dining, shopping, and exploring the best of Kuala Lumpur — all within easy reach of your home base.</p>
+  <div class="local-grid">
+    <div class="local-card">
+      <div class="local-category">🍜 Local Food</div>
+      <div class="local-item">Jalan Alor Night Market <span>15 min walk</span></div>
+      <div class="local-item">Lot 10 Hutong Food Court <span>10 min walk</span></div>
+      <div class="local-item">SS2 Hawker Centre <span>Grab</span></div>
+      <div class="local-item">Restoran Nasi Kandar <span>5 min walk</span></div>
+    </div>
+    <div class="local-card">
+      <div class="local-category">🛍️ Shopping</div>
+      <div class="local-item">Pavilion KL <span>8 min walk</span></div>
+      <div class="local-item">Suria KLCC <span>12 min drive</span></div>
+      <div class="local-item">Fahrenheit 88 <span>10 min walk</span></div>
+      <div class="local-item">Berjaya Times Square <span>Monorail</span></div>
+    </div>
+    <div class="local-card">
+      <div class="local-category">🏛️ Attractions</div>
+      <div class="local-item">Petronas Twin Towers <span>12 min drive</span></div>
+      <div class="local-item">KL Tower <span>10 min walk</span></div>
+      <div class="local-item">KLCC Park <span>12 min drive</span></div>
+      <div class="local-item">Bukit Nanas Forest Reserve <span>5 min walk</span></div>
+    </div>
+    <div class="local-card">
+      <div class="local-category">🏥 Medical</div>
+      <div class="local-item">Prince Court Medical Centre <span>5 min drive</span></div>
+      <div class="local-item">Gleneagles KL <span>8 min drive</span></div>
+      <div class="local-item">Pantai Hospital <span>Grab</span></div>
+    </div>
+    <div class="local-card">
+      <div class="local-category">🍽️ Must-Try Malaysian Food</div>
+      <div class="local-item">Nasi Lemak <span>coconut rice — national dish</span></div>
+      <div class="local-item">Char Kuey Teow <span>wok-fried flat noodles</span></div>
+      <div class="local-item">Roti Canai <span>flaky flatbread with curry</span></div>
+      <div class="local-item">Satay <span>grilled skewers with peanut sauce</span></div>
+      <div class="local-item">Cendol <span>shaved ice dessert with coconut milk</span></div>
+      <div class="local-item">Teh Tarik <span>pulled milk tea — a KL staple</span></div>
+    </div>
+    <div class="local-card">
+      <div class="local-category">🌙 Nightlife & Bars</div>
+      <div class="local-item">Changkat Bukit Bintang <span>10 min walk</span></div>
+      <div class="local-item">TREC Entertainment Hub <span>Grab</span></div>
+      <div class="local-item">Heli Lounge Bar <span>10 min walk</span></div>
+      <div class="local-item">Sky Bar, Traders Hotel <span>Grab</span></div>
+    </div>
+  </div>
+</section>
+</div>
+
+<!-- VISIT MALAYSIA 2026 -->
+<div class="vm-bg">
+<section class="fade-in" style="text-align:center; max-width:700px;">
+  <div class="section-eyebrow">🇲🇾 Visit Malaysia Year 2026</div>
+  <h2 class="section-title" style="color:var(--white);">Explore the <em>Best of Malaysia</em></h2>
+  <p style="font-size:0.88rem; color:rgba(255,255,255,0.55); line-height:1.85;">Malaysia is welcoming the world in 2026. From the iconic Twin Towers to ancient rainforests, pristine islands, and world-class cuisine — your adventure starts right here in KL.</p>
+  <div class="vm-banner">"Malaysia Truly Asia — Discover Something New Every Day"</div>
+  <div class="vm-tips">
+    <div class="vm-tip">
+      <div class="vm-tip-icon">🗺️</div>
+      <div class="vm-tip-title">Day Trip: Batu Caves</div>
+      <div class="vm-tip-body">30 min by KTM Komuter from KL Sentral. Iconic Hindu temple carved into limestone hills.</div>
+    </div>
+    <div class="vm-tip">
+      <div class="vm-tip-icon">🌊</div>
+      <div class="vm-tip-title">Weekend: Langkawi or Perhentian</div>
+      <div class="vm-tip-body">AirAsia flights from KLIA2. Crystal clear waters and white sand beaches within 1 hour.</div>
+    </div>
+    <div class="vm-tip">
+      <div class="vm-tip-icon">🍤</div>
+      <div class="vm-tip-title">Must-Try: Penang Food Trail</div>
+      <div class="vm-tip-body">Day trip by AirAsia or ETS train. UNESCO heritage city and food capital of Malaysia.</div>
+    </div>
+    <div class="vm-tip">
+      <div class="vm-tip-icon">🌿</div>
+      <div class="vm-tip-title">Nature: Cameron Highlands</div>
+      <div class="vm-tip-body">3-hour drive. Cool mountain air, tea plantations, strawberry farms, and misty valleys.</div>
+    </div>
+  </div>
+</section>
+</div>
+
+<!-- EMERGENCY & CONTACT -->
+<div id="contact" class="emergency-bg">
+<section class="fade-in">
+  <div class="section-eyebrow">We are here for you</div>
+  <h2 class="section-title">Contact &amp; <em>Emergency</em></h2>
+  <p class="section-body">For any questions, issues, or emergencies during your stay — please reach out. We typically respond within 15 minutes.</p>
+  <div class="emergency-grid">
+    <div class="emergency-card host">
+      <div class="e-label">Your Host</div>
+      <div class="e-name">Lee · JRLUX Homestays</div>
+      <div class="e-contact">WhatsApp / Airbnb Message<br><strong>Available 8AM – 11PM Daily</strong></div>
+    </div>
+    <div class="emergency-card">
+      <div class="e-label">Building Management</div>
+      <div class="e-name">Platinum Suites Management Office</div>
+      <div class="e-contact">Located on Level 50A<br><strong>Office Hours: 9AM – 6PM</strong></div>
+    </div>
+    <div class="emergency-card">
+      <div class="e-label">Emergency Services</div>
+      <div class="e-name">Police / Fire / Ambulance</div>
+      <div class="e-contact">Emergency: <strong>999</strong><br>Non-emergency Police: <strong>03-2266 2222</strong></div>
+    </div>
+    <div class="emergency-card">
+      <div class="e-label">Nearest Hospital</div>
+      <div class="e-name">Prince Court Medical Centre</div>
+      <div class="e-contact">5 min drive via Grab<br><strong>24-Hour Emergency</strong></div>
+    </div>
+    <div class="emergency-card">
+      <div class="e-label">Nearest Hospital (Alt.)</div>
+      <div class="e-name">Gleneagles Kuala Lumpur</div>
+      <div class="e-contact">8 min drive via Grab<br><strong>24-Hour Emergency</strong></div>
+    </div>
+    <div class="emergency-card">
+      <div class="e-label">Tourist Helpline</div>
+      <div class="e-name">Malaysia Tourism Hotline</div>
+      <div class="e-contact">Free call: <strong>1300 88 5050</strong><br>Available 8AM – 8PM</div>
+    </div>
+  </div>
+  <div style="margin-top:2rem; padding:1.25rem 1.5rem; background:var(--gold-pale); border:1px solid var(--gold-light); border-radius:2px; font-size:0.82rem; color:var(--mid); line-height:1.7;">
+    <strong style="color:var(--dark);">WiFi Details:</strong> Network and password are displayed on the card provided in the unit on the kitchen counter. If you cannot find it, please message your host and we'll send it to you immediately.
+  </div>
+</section>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">
+    <svg width="180" height="55" viewBox="0 0 260 80" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:0 auto;">
+      <circle cx="40" cy="40" r="34" fill="none" stroke="#C9A84C" stroke-width="1.8"/>
+      <circle cx="40" cy="40" r="27" fill="none" stroke="#C9A84C" stroke-width="0.5" opacity="0.4"/>
+      <text x="40" y="48" font-family="Georgia,serif" font-size="24" font-weight="700" fill="#C9A84C" text-anchor="middle" letter-spacing="1.5">JR</text>
+      <line x1="84" y1="16" x2="84" y2="64" stroke="#C9A84C" stroke-width="0.6" opacity="0.35"/>
+      <text x="98" y="44" font-family="Georgia,serif" font-size="30" font-weight="400" fill="#FFFFFF" letter-spacing="7">LUX</text>
+      <text x="99" y="60" font-family="Georgia,serif" font-size="8" fill="#C9A84C" letter-spacing="3.5">HOMESTAYS</text>
+    </svg>
+  </div>
+  <div class="footer-sub">Platinum Suites KLCC &nbsp;·&nbsp; Kuala Lumpur, Malaysia</div>
+  <div class="footer-line"></div>
+  <p class="footer-note">Thank you for choosing JRLUX Homestays. We hope this stay has been everything you hoped for and more. Please leave us a review — your feedback means the world to us and helps future guests find their home away from home.</p>
+  <div style="margin-top:1.5rem; font-size:0.65rem; color:rgba(255,255,255,0.2); letter-spacing:0.1em; text-transform:uppercase;">★ 5.0 · 35 Reviews · Top 5% of Homes in KL · Superhost</div>
+</footer>
+
+<script>
+  // Fade in on scroll
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
